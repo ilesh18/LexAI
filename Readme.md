@@ -1,1 +1,2 @@
-Welcome to LexAI
+# Welcome To LexAI
+
