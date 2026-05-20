@@ -45,68 +45,80 @@ export const chatWithGroq = createServerFn({ method: "POST" })
   });
 
 const ANALYZER_SYSTEM_PROMPT = `
-You are LexAI's Situation Analyzer, an elite AI legal assistant specializing in Indian Law.
-Your goal is to carefully analyze the user's legal situation (submitted in English, Hindi, or Hinglish) and return a precise, structured legal analysis.
+You are LexAI's Situation Analyzer, an elite AI legal assistant.
+Analyze the user's legal situation and return a precise, structured legal analysis in JSON.
 
-You MUST respond strictly with a valid JSON object. Do not include any text, markdown codeblocks (like \`\`\`json), or explanations outside of the JSON block.
-
-Structure your JSON response exactly like this:
+Structure:
 {
-  "languageDetected": "English" | "Hindi" | "Hinglish",
-  "legalDomain": "e.g., Labor Law / Rent & Tenancy / Cyber Crime / Consumer Protection",
-  "keyFacts": [
-    "Identify critical fact 1",
-    "Identify critical fact 2",
-    "Identify critical fact 3"
-  ],
-  "relevantLaws": [
+  "languageDetected": "string",
+  "legalDomain": "string",
+  "keyFacts": ["fact 1", "fact 2"],
+  "relevantLaws": [{"law": "name", "explanation": "how it applies"}],
+  "suggestedActions": ["action 1", "action 2"],
+  "riskLevel": "Low" | "Medium" | "High",
+  "riskExplanation": "why"
+}
+`.trim();
+
+const RIGHTS_ENGINE_PROMPT = `
+You are LexAI's Know Your Rights Engine — a specialized Indian legal rights advisor.
+Identify EXACTLY which Indian laws protect the user. Return ONLY JSON.
+
+Structure:
+{
+  "legalDomain": "string",
+  "situationSummary": "string",
+  "rightsOverview": "string",
+  "laws": [
     {
-      "law": "Name of Act (e.g., Section 73 of the Indian Contract Act, 1872)",
-      "explanation": "Specific explanation of how it applies to their situation."
+      "id": number,
+      "name": "Full Official Act Name, Year",
+      "shortName": "abbreviation",
+      "sections": ["Section X"],
+      "relevance": "primary | secondary | indirect",
+      "protection": "One sentence summary",
+      "plainExplanation": "2-3 sentences explaining it simply",
+      "keyRights": ["right 1", "right 2"],
+      "penalty": "penalty details"
     }
   ],
-  "suggestedActions": [
-    "First step to take (e.g., Send a formal demand letter/legal notice)",
-    "Second step to take (e.g., File a complaint on the National Consumer Helpline or cybercrime portal)",
-    "Third step to take (e.g., Gather all documentary evidence)"
-  ],
-  "riskLevel": "Low" | "Medium" | "High",
-  "riskExplanation": "Short explanation of the potential legal/financial risks involved."
-}
-
-If the user's message is not related to a legal situation or legal aid, return:
-{
-  "error": "I am a dedicated legal aid assistant. Please describe a situation with potential legal implications."
+  "timeLimit": { "exists": boolean, "duration": "string", "warning": "string" },
+  "immediateActions": ["action 1", "action 2"],
+  "strengthOfCase": "strong | moderate | weak",
+  "strengthReason": "why",
+  "importantWarning": "critical warning or null"
 }
 `.trim();
 
 export const analyzeLegalSituation = createServerFn({ method: "POST" })
   .handler(async (ctx: any) => {
     const messages = ctx.data as { role: "user" | "assistant"; content: string }[];
-    
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${GROQ_API_KEY}`,
-      },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${GROQ_API_KEY}` },
       body: JSON.stringify({
         model: "llama-3.3-70b-versatile",
-        messages: [
-          { role: "system", content: ANALYZER_SYSTEM_PROMPT },
-          ...messages
-        ],
+        messages: [{ role: "system", content: ANALYZER_SYSTEM_PROMPT }, ...messages],
         temperature: 0.3,
-        max_tokens: 1500,
         response_format: { type: "json_object" }
       }),
     });
+    return response.json();
+  });
 
-    if (!response.ok) {
-      const errorData = (await response.json()) as any;
-      throw new Error(errorData.error?.message || "Failed to analyze situation");
-    }
-
+export const getLegalRights = createServerFn({ method: "POST" })
+  .handler(async (ctx: any) => {
+    const messages = ctx.data as { role: "user" | "assistant"; content: string }[];
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${GROQ_API_KEY}` },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages: [{ role: "system", content: RIGHTS_ENGINE_PROMPT }, ...messages],
+        temperature: 0.4,
+        response_format: { type: "json_object" }
+      }),
+    });
     return response.json();
   });
 
