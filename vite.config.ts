@@ -4,13 +4,16 @@ import tailwindcss from "@tailwindcss/vite";
 import viteReact from "@vitejs/plugin-react";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import tsConfigPaths from "vite-tsconfig-paths";
+import { nitro } from "nitro/vite";
 
-// Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-// @cloudflare/vite-plugin builds from this — wrangler.jsonc main alone is insufficient.
+// Redirect TanStack Start's bundled server entry to src/server.ts if on Cloudflare.
 export default defineConfig(({ command }) => ({
   plugins: [
     tanstackStart({
       server: process.env.CLOUDFLARE === "true" ? { entry: "server" } : undefined,
+    }),
+    nitro({
+      preset: process.env.VERCEL === "1" ? "vercel" : undefined,
     }),
     viteReact(),
     tailwindcss(),
