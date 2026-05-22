@@ -87,10 +87,11 @@ function DashboardPage() {
 
     // Stats fetching
     const fetchStats = async () => {
-      setStatsLoading(true);
+      // Don't set loading to true if we already have stats (prevents flickering on re-focus)
+      if (stats.totalAnalyses === 0) setStatsLoading(true);
       try {
         const data = await getActivityStats(user.uid);
-        setStats(data);
+        if (data) setStats(data);
       } catch (error) {
         console.error("Stats fetch error:", error);
       } finally {
