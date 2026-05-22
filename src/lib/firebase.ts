@@ -27,12 +27,17 @@ const firebaseConfig = {
   measurementId: getEnv("VITE_FIREBASE_MEASUREMENT_ID") || getEnv("NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID")
 };
 
+import { initializeFirestore } from "firebase/firestore";
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
 // Initialize Firebase services
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+export const db = initializeFirestore(app, {
+  ignoreUndefinedProperties: true,
+  experimentalForceLongPolling: true,
+});
 export const googleProvider = new GoogleAuthProvider();
 
 // Initialize Analytics conditionally (it doesn't work in some environments like SSR)

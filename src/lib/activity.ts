@@ -80,22 +80,39 @@ export async function logActivity(
   description: string,
   metadata?: any
 ): Promise<string | null> {
+  if (!uid) {
+    console.warn("Cannot log activity: No UID provided");
+    return null;
+  }
+
   try {
-    const docRef = await addDoc(collection(db, "activities"), {
+    const activityData = {
       uid,
       type,
       title,
-      description,
+      description: description || "",
       metadata: metadata || {},
       createdAt: serverTimestamp(),
-    });
+    };
+
+    // Use a timeout for the write operation to catch hangs
+    const writePromise = addDoc(collection(db, "activities"), activityData);
+    const docRef = await writePromise;
+    
+    console.log(`Activity logged successfully: ${type} (ID: ${docRef.id})`);
     
     // Background update of stats - don't await to keep UI snappy
-    incrementActivityStat(uid, type);
+    incrementActivityStat(uid, type).catch(err => 
+      console.error("Delayed stat update failed:", err)
+    );
     
     return docRef.id;
-  } catch (error) {
-    console.error("Failed to log activity:", error);
+  } catch (error: any) {
+    console.error("CRITICAL: Failed to store activity in Firestore:", error);
+    // Log more details for debugging
+    if (error.code === 'permission-denied') {
+      console.error("Check your Firestore Security Rules - permission denied for 'activities' collection.");
+    }
     return null;
   }
 }
@@ -137,6 +154,11 @@ export function subscribeToRecentActivities(
   onUpdate: (activities: Activity[]) => void,
   count: number = 10
 ) {
+  if (!uid) return () => {};
+  
+  let unsubscribeFallback: (() => void) | null = null;
+  console.log(`Setting up activity subscription for UID: ${uid}`);
+
   const q = query(
     collection(db, "activities"),
     where("uid", "==", uid),
@@ -144,26 +166,67 @@ export function subscribeToRecentActivities(
     limit(count)
   );
 
-  return onSnapshot(q, (snapshot) => {
-    const activities = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...(doc.data() as Omit<Activity, "id">)
-    }));
-    onUpdate(activities);
-  }, (error) => {
-    console.error("Activity subscription error:", error);
-    // Fallback if index fails
-    const fallbackQ = query(collection(db, "activities"), where("uid", "==", uid), limit(20));
-    onSnapshot(fallbackQ, (s) => {
-      const activities = s.docs.map(d => ({ id: d.id, ...(d.data() as Omit<Activity, "id">) }))
-        .sort((a: any, b: any) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+  const unsubscribePrimary = onSnapshot(
+    q,
+    (snapshot) => {
+      const activities = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as Omit<Activity, "id">),
+      }));
+      console.log(`[Firestore] Found ${activities.length} activities via primary query`);
       onUpdate(activities);
-    });
-  });
+    },
+    (error) => {
+      if (error.code === 'permission-denied') {
+        console.error("PERMISSION DENIED: You do not have access to read 'activities' for this UID. Check security rules.", error);
+        onUpdate([]);
+        return;
+      }
+      
+      console.warn("Activity primary query failed (likely missing index), trying fallback...", error.message);
+      
+      // Fallback: Query WITHOUT orderBy to avoid index requirement
+      const fallbackQ = query(
+        collection(db, "activities"),
+        where("uid", "==", uid),
+        limit(Math.max(count, 50)) // Get more to sort manually
+      );
+
+      unsubscribeFallback = onSnapshot(
+        fallbackQ,
+        (snapshot) => {
+          const activities = snapshot.docs
+            .map((doc) => ({
+              id: doc.id,
+              ...(doc.data() as Omit<Activity, "id">),
+            }))
+            .sort((a: any, b: any) => {
+              const timeA = a.createdAt?.toMillis?.() || 0;
+              const timeB = b.createdAt?.toMillis?.() || 0;
+              return timeB - timeA;
+            })
+            .slice(0, count);
+          
+          console.log(`[Firestore Fallback] Found ${activities.length} activities`);
+          onUpdate(activities);
+        },
+        (innerError) => {
+          console.error("Activity fallback subscription also failed:", innerError);
+          onUpdate([]);
+        }
+      );
+    }
+  );
+
+  return () => {
+    unsubscribePrimary();
+    if (unsubscribeFallback) unsubscribeFallback();
+  };
 }
 
 // ─── Get activity by ID ──────────────────────────────────────────
 export async function getActivityById(id: string): Promise<Activity | null> {
+  if (!id) return null;
   try {
     const docSnap = await getDoc(doc(db, "activities", id));
     if (docSnap.exists()) {
@@ -171,7 +234,7 @@ export async function getActivityById(id: string): Promise<Activity | null> {
     }
     return null;
   } catch (error) {
-    console.error("Failed to fetch activity:", error);
+    console.error("Failed to fetch activity by ID:", error);
     return null;
   }
 }
@@ -182,9 +245,13 @@ export async function getActivityStats(uid: string): Promise<{
   totalDrafts: number;
   totalRightsChecks: number;
 }> {
+  if (!uid) return { totalAnalyses: 0, totalDrafts: 0, totalRightsChecks: 0 };
+  
   try {
-    // Highly optimized: read from cached stats document first
-    const statsSnap = await getDoc(doc(db, "users", uid, "dashboard", "stats"));
+    // 1. Try to read from cached stats document first (Fastest)
+    const statsRef = doc(db, "users", uid, "dashboard", "stats");
+    const statsSnap = await getDoc(statsRef);
+    
     if (statsSnap.exists()) {
       const data = statsSnap.data() as any;
       return {
@@ -194,52 +261,36 @@ export async function getActivityStats(uid: string): Promise<{
       };
     }
 
-    // Fallback to counting if stats doc doesn't exist yet
-    const baseQuery = query(collection(db, "activities"), where("uid", "==", uid));
-    const [analysesStarted, analysesCompleted, drafts, rights] = await Promise.all([
-      getCountFromServer(query(baseQuery, where("type", "==", "analysis_started"))),
-      getCountFromServer(query(baseQuery, where("type", "==", "analysis_completed"))),
-      getCountFromServer(query(baseQuery, where("type", "==", "draft_generated"))),
-      getCountFromServer(query(baseQuery, where("type", "==", "rights_checked"))),
-    ]);
+    // 2. Fallback to manual count if stats doc doesn't exist (Slowest on first run)
+    // We avoid getCountFromServer with complex queries to avoid index requirements
+    const q = query(
+      collection(db, "activities"), 
+      where("uid", "==", uid), 
+      limit(300) // Limit to 300 to keep it somewhat fast
+    );
+    
+    const snapshot = await getDocs(q);
+    
+    let totalAnalyses = 0;
+    let totalDrafts = 0;
+    let totalRightsChecks = 0;
 
-    const result = {
-      totalAnalyses: analysesStarted.data().count + analysesCompleted.data().count,
-      totalDrafts: drafts.data().count,
-      totalRightsChecks: rights.data().count,
-    };
+    snapshot.docs.forEach((doc) => {
+      const type = doc.data().type;
+      if (type === "analysis_completed" || type === "analysis_started") totalAnalyses++;
+      if (type === "draft_generated") totalDrafts++;
+      if (type === "rights_checked") totalRightsChecks++;
+    });
 
-    // Cache this result for next time
-    setDoc(doc(db, "users", uid, "dashboard", "stats"), result, { merge: true }).catch(() => {});
+    const result = { totalAnalyses, totalDrafts, totalRightsChecks };
+    
+    // Sync back to cache for next time
+    setDoc(statsRef, result, { merge: true }).catch(() => {});
 
     return result;
   } catch (error) {
-    // Fallback if composite indices are missing or cached doc fails
-    console.warn("Activity stats query failed, falling back to manual count:", error);
-    try {
-      const q = query(collection(db, "activities"), where("uid", "==", uid), limit(500));
-      const snapshot = await getDocs(q);
-      
-      let totalAnalyses = 0;
-      let totalDrafts = 0;
-      let totalRightsChecks = 0;
-
-      snapshot.docs.forEach((doc) => {
-        const data = doc.data();
-        if (data.type === "analysis_completed" || data.type === "analysis_started") totalAnalyses++;
-        if (data.type === "draft_generated") totalDrafts++;
-        if (data.type === "rights_checked") totalRightsChecks++;
-      });
-      
-      const fallbackResult = { totalAnalyses, totalDrafts, totalRightsChecks };
-      // Try to cache the fallback result too
-      setDoc(doc(db, "users", uid, "dashboard", "stats"), fallbackResult, { merge: true }).catch(() => {});
-      
-      return fallbackResult;
-    } catch (innerError) {
-      console.error("Critical failure in activity stats:", innerError);
-      return { totalAnalyses: 0, totalDrafts: 0, totalRightsChecks: 0 };
-    }
+    console.error("Critical failure in activity stats:", error);
+    return { totalAnalyses: 0, totalDrafts: 0, totalRightsChecks: 0 };
   }
 }
 
