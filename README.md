@@ -1,4 +1,4 @@
-# ⚖️ ApnaNyaya (अपना न्याय)
+#  ApnaNyaya (अपना न्याय)
 
 ### *Legal Intelligence for Every Indian*
 
@@ -7,7 +7,7 @@
 
 ---
 
-## 🌟 The Vision
+##  The Vision
 
 1.4 billion people. 1.7 million lawyers. Most Indians are one legal problem away from bankruptcy or exploitation. **ApnaNyaya** bridges this gap by providing instant, multilingual, and actionable legal intelligence to every citizen.
 
@@ -15,30 +15,30 @@ Describe your problem in plain Hindi, English, or Hinglish. We tell you your rig
 
 ---
 
-## 🚀 Key Features
+##  Key Features
 
-### 🎙️ 1. Multilingual Voice Chat (LexAI)
+### 1. Multilingual Voice Chat (LexAI)
 A floating assistant that understands regional Indian languages. Hold to speak, release to send. 
 - Powered by **Groq (Llama-3.3 70B)** for low-latency, nuanced legal reasoning.
 - Supports Hindi, English, Hinglish, and several regional dialects.
 
-### 🔍 2. Situation Analyzer & Strategy Engine
+###  2. Situation Analyzer & Strategy Engine
 Toggle between high-level strategic analysis and specific statutory rights. 
 - Classifies your case automatically (Labour Law, Consumer Protection, RTI, etc.).
 - Identifies critical sections and relevant acts.
 
-### 📅 3. Smart Case & Deadline Tracker
+###  3. Smart Case & Deadline Tracker
 Never miss a statute of limitation again.
 - **Smart Presets**: Automatically populates deadlines based on case type (e.g., 30 days for an RTI response).
 - **Pulse Notifications**: Real-time overdue alerts directly in your navigation bar.
 - **Timeline Visualization**: A vertical timeline of your legal errands and milestones.
 
-### 📜 4. Document Automator & DIY Rights
+###  4. Document Automator & DIY Rights
 Step-by-step guidance to generate legal notices, RTI applications, and complaints without paying thousands in legal fees.
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 - **Framework**: [TanStack Start](https://tanstack.com/router/v1/docs/guide/start) (Full-stack React with Vite)
 - **AI Engine**: [Groq Cloud](https://groq.com/) (Llama-3.3-70b-versatile)
@@ -49,7 +49,7 @@ Step-by-step guidance to generate legal notices, RTI applications, and complaint
 
 ---
 
-## 📦 Installation & Setup
+##  Installation & Setup
 
 1. **Clone the repository**:
    ```bash
@@ -84,7 +84,7 @@ Step-by-step guidance to generate legal notices, RTI applications, and complaint
 
 ---
 
-## 🎨 Design Philosophy
+##  Design Philosophy
 
 ApnaNyaya uses a **State-of-the-Art** design system inspired by premium legal firms:
 - **HSL-tailored Palettes**: Deep charcoal backgrounds with burnished gold accents.
@@ -93,13 +93,13 @@ ApnaNyaya uses a **State-of-the-Art** design system inspired by premium legal fi
 
 ---
 
-## 🚀 The Mission
+##  The Mission
 
 ApnaNyaya aims to decentralize legal power and put the "Strategy of the Strong" into the hands of the everyman. By combining AI with authentic legal knowledge, we are making justice accessible, affordable, and actionable for a billion people.
 
 ---
 
-## 🔗 Links
+##  Links
 
 - **Live App**: [https://apna-nyaya.vercel.app/](https://apna-nyaya.vercel.app/)
 - **Demo Video**: [Coming Soon]
@@ -107,4 +107,4 @@ ApnaNyaya aims to decentralize legal power and put the "Strategy of the Strong" 
 
 ---
 
-Developed with ❤️ by **Team LexAI / ApnaNyaya**
+Developed with by **Team LexAI / ApnaNyaya**
