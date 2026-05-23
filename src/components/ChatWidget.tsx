@@ -49,6 +49,7 @@ export const ChatWidget = () => {
         body: JSON.stringify({
           message: text,
           history: messages.slice(-5), // Send last few messages for context
+          preferredLanguage: currentLang.name,
         }),
       });
 

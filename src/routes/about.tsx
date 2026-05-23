@@ -43,7 +43,7 @@ function AboutPage() {
         <Reveal>
           <Eyebrow>Roadmap</Eyebrow>
           <h2 className="mt-6 font-serif text-4xl md:text-5xl text-primary leading-tight max-w-3xl">
-            From hackathon to startup.
+            From vision to reality.
           </h2>
         </Reveal>
         <div className="mt-14 grid md:grid-cols-2 lg:grid-cols-4 gap-px bg-border border border-border">

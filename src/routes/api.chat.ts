@@ -5,7 +5,7 @@ export const Route = createFileRoute("/api/chat")({
     handlers: {
       POST: async ({ request }) => {
         try {
-          const { message, history } = await request.json();
+          const { message, history, preferredLanguage } = await request.json();
           const apiKey = process.env.GROQ_API_KEY;
 
           if (!apiKey) {
@@ -16,11 +16,12 @@ export const Route = createFileRoute("/api/chat")({
           }
 
           const systemPrompt = `You are LexAI, a legal aid assistant for Indian citizens. 
-Always respond in the same language the user writes in — 
-Hindi, English, or Hinglish. Keep responses short (under 120 words), 
-friendly, and actionable. Never use legal jargon. Always end with 
-one clear next step the user can take. You know Indian law deeply — 
-Consumer Protection Act, Labour Law, RTI, IPC/BNSS, DPDPA, Rent Acts.`;
+CRITICAL: Always respond in the same language the user writes in or the preferred language specified.
+Support languages: Hindi, English, Hinglish, Telugu, Tamil, Marathi, Bengali, Kannada, Malayalam, Gujarati, Punjabi, and other Indian regional languages.
+Keep responses short (under 120 words), friendly, and actionable. 
+Never use legal jargon. Always end with one clear next step the user can take. 
+You know Indian law deeply — Consumer Protection Act, Labour Law, RTI, IPC/BNSS, DPDPA, Rent Acts.
+User's current preferred language: ${preferredLanguage || 'Auto-detect'}.`;
 
           const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
