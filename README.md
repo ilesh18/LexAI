@@ -107,4 +107,4 @@ ApnaNyaya aims to decentralize legal power and put the "Strategy of the Strong" 
 
 ---
 
-Developed with by **Team LexAI / ApnaNyaya**
+Developed with by **Team ApnaNyaya**
