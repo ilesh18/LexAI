@@ -39,7 +39,7 @@ function ContactPage() {
             <Block label="Early access" body="Be among the first 1,000 users when the public beta launches. Free forever." />
             <Block label="Partnerships" body="HR teams, startups, NGOs and co-working spaces — white-label ApnaNyaya for your community." />
             <Block label="API" body="Building a legal-adjacent product? Embed ApnaNyaya's retrieval and document engine." />
-            <Block label="Press & speaking" body="Hackathons, panels, podcasts — we'd love to talk about access to justice." />
+            <Block label="Press & speaking" body="Panels and podcasts — we'd love to talk about access to justice." />
             <div className="rule" />
             <div>
               <p className="text-xs uppercase tracking-[0.2em] text-primary/70 mb-2">Direct</p>
