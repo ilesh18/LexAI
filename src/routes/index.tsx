@@ -37,14 +37,8 @@ function ChatBotFAB() {
   return (
     <Link
       to="/analyzer"
-      className="fixed bottom-8 right-8 z-[60] flex items-center flex-row-reverse gap-3 group"
+      className="fixed bottom-8 left-8 z-[60] flex items-center flex-row-reverse gap-3 group"
     >
-      <div className="bg-brown p-2 shadow-2xl hover:bg-accent transition-all duration-300 group-hover:scale-110 flex items-center justify-center">
-        <img src="/Logo.png" alt="Logo" className="w-10 h-10 object-contain" />
-      </div>
-      <div className="hidden md:block bg-background border border-border px-4 py-2 text-[10px] uppercase tracking-widest text-primary shadow-xl font-medium opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300 pointer-events-none">
-        Situation Analyzer
-      </div>
     </Link>
   );
 }

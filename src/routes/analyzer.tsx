@@ -217,7 +217,7 @@ function AnalyzerPage() {
 
       // Log completion
       if (user && !specificRightsFetch) {
-        logActivity(
+        const id = await logActivity(
           user.uid,
           "analysis_completed",
           parsed.legalDomain || "Legal Analysis",
@@ -229,15 +229,15 @@ function AnalyzerPage() {
             situation: situation,
             view: activeView 
           }
-        ).then(id => {
-          if (id) {
-            navigate({
-              to: "/analyzer",
-              search: { caseId: id },
-              replace: true,
-            });
-          }
-        });
+        );
+
+        if (id) {
+          navigate({
+            to: "/analyzer",
+            search: { caseId: id },
+            replace: true,
+          });
+        }
       }
     } catch (e) {
       console.error(e);

@@ -116,6 +116,8 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+import { ChatWidget } from "@/components/ChatWidget";
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
@@ -123,6 +125,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Outlet />
+        <ChatWidget />
         <Toaster position="top-right" richColors />
       </AuthProvider>
     </QueryClientProvider>
