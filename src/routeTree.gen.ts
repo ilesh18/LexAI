@@ -20,6 +20,10 @@ import { Route as ChatbotRouteImport } from './routes/chatbot'
 import { Route as AnalyzerRouteImport } from './routes/analyzer'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TrackerIndexRouteImport } from './routes/tracker/index'
+import { Route as TrackerNewRouteImport } from './routes/tracker/new'
+import { Route as TrackerCaseIdRouteImport } from './routes/tracker/$caseId'
+import { Route as ApiChatRouteImport } from './routes/api.chat'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -76,6 +80,26 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TrackerIndexRoute = TrackerIndexRouteImport.update({
+  id: '/tracker/',
+  path: '/tracker/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrackerNewRoute = TrackerNewRouteImport.update({
+  id: '/tracker/new',
+  path: '/tracker/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrackerCaseIdRoute = TrackerCaseIdRouteImport.update({
+  id: '/tracker/$caseId',
+  path: '/tracker/$caseId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -89,6 +113,10 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/api/chat': typeof ApiChatRoute
+  '/tracker/$caseId': typeof TrackerCaseIdRoute
+  '/tracker/new': typeof TrackerNewRoute
+  '/tracker/': typeof TrackerIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -102,6 +130,10 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/api/chat': typeof ApiChatRoute
+  '/tracker/$caseId': typeof TrackerCaseIdRoute
+  '/tracker/new': typeof TrackerNewRoute
+  '/tracker': typeof TrackerIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -116,6 +148,10 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/api/chat': typeof ApiChatRoute
+  '/tracker/$caseId': typeof TrackerCaseIdRoute
+  '/tracker/new': typeof TrackerNewRoute
+  '/tracker/': typeof TrackerIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -131,6 +167,10 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/signup'
     | '/sitemap.xml'
+    | '/api/chat'
+    | '/tracker/$caseId'
+    | '/tracker/new'
+    | '/tracker/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -144,6 +184,10 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/signup'
     | '/sitemap.xml'
+    | '/api/chat'
+    | '/tracker/$caseId'
+    | '/tracker/new'
+    | '/tracker'
   id:
     | '__root__'
     | '/'
@@ -157,6 +201,10 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/signup'
     | '/sitemap.xml'
+    | '/api/chat'
+    | '/tracker/$caseId'
+    | '/tracker/new'
+    | '/tracker/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -171,6 +219,10 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ApiChatRoute: typeof ApiChatRoute
+  TrackerCaseIdRoute: typeof TrackerCaseIdRoute
+  TrackerNewRoute: typeof TrackerNewRoute
+  TrackerIndexRoute: typeof TrackerIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -252,6 +304,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tracker/': {
+      id: '/tracker/'
+      path: '/tracker'
+      fullPath: '/tracker/'
+      preLoaderRoute: typeof TrackerIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tracker/new': {
+      id: '/tracker/new'
+      path: '/tracker/new'
+      fullPath: '/tracker/new'
+      preLoaderRoute: typeof TrackerNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tracker/$caseId': {
+      id: '/tracker/$caseId'
+      path: '/tracker/$caseId'
+      fullPath: '/tracker/$caseId'
+      preLoaderRoute: typeof TrackerCaseIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -267,6 +347,10 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ApiChatRoute: ApiChatRoute,
+  TrackerCaseIdRoute: TrackerCaseIdRoute,
+  TrackerNewRoute: TrackerNewRoute,
+  TrackerIndexRoute: TrackerIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

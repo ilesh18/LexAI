@@ -12,10 +12,13 @@ const links = [
   { to: "/contact", label: "Contact" },
 ] as const;
 
+import { useCases } from "@/hooks/useCases";
+
 export function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const { user, logout } = useAuth();
+  const { stats } = useCases(user?.uid);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -54,8 +57,23 @@ export function Nav() {
               activeProps={{ className: "text-foreground" }}
             >
               {l.label}
+              {l.to === '/features' && user && stats.overdue > 0 && (
+                <span className="absolute -top-1 -right-2 h-2 w-2 bg-red-600 rounded-full animate-pulse" />
+              )}
             </Link>
           ))}
+          {user && (
+            <Link
+              to="/tracker"
+              className="text-sm text-foreground/70 hover:text-foreground transition-colors relative"
+              activeProps={{ className: "text-foreground" }}
+            >
+              Tracker
+              {stats.overdue > 0 && (
+                <span className="absolute -top-1 -right-2 h-2 w-2 bg-red-600 rounded-full animate-pulse" />
+              )}
+            </Link>
+          )}
           {user && (
             <Link
               to="/dashboard"
@@ -122,6 +140,15 @@ export function Nav() {
                 {l.label}
               </Link>
             ))}
+            {user && (
+              <Link
+                to="/tracker"
+                onClick={() => setOpen(false)}
+                className="text-sm text-foreground/80 font-medium"
+              >
+                Tracker
+              </Link>
+            )}
             {user && (
               <Link
                 to="/dashboard"
